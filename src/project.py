@@ -9,30 +9,39 @@ class jumpingObject():
         self.width = width
         self.height = height
         self.surface = pygame.Surface(size=(width, height))
-        self.hitBox = pygame.Rect((0, 0), (width, height))
+        self.hitBox = pygame.Rect(self.pos, (width, height))
     
     def draw(self, surface):
+        self.surface.fill("white")
         surface.blit(self.surface, self.pos)
         pygame.draw.rect(surface=self.surface, color=(255, 0, 0), rect=self.hitBox)
     
     def returnHitBox(self):
         return self.hitBox
-    
+
     def update(self, surface):
         self.draw(surface)
 
 class Player():
-    def __init__(self, pos = (0,0), isFalling = True, keyPressed = ""):
+    def __init__(self, pos = (0,0), isFalling = True, keyPressed = "", screenSize = (0, 0), width = 10, height = 10, scale = 1):
         self.isFalling = isFalling
         self.keyPressed = keyPressed
-        self.gravityVal = 0
+        self.gravityVal = 1
+        self.screenSize = screenSize
         self.pos = pos
-        self.surface = pygame.Surface(size=(10, 10))
-        self.hitBox = pygame.Rect((0, 0), (10, 10))
+        self.width = width
+        self.height = height
+        self.scale = 1
+        self.surface = pygame.Surface(size=(width, height))
+        self.hitBox = pygame.Rect((0, 0), (width, height))
         pygame.draw.rect(surface = self.surface, color=(255, 0, 0), rect=self.hitBox)
+
 
     def setFalling(self, val):
         self.isFalling = val
+
+    def returnHitBox(self):
+        return self.hitBox
 
     def getPos(self):
         return self.pos
@@ -44,9 +53,6 @@ class Player():
         else:
             self.setFalling(True)
     
-    def returnHitBox(self):
-        return self.hitBox
-    
     def returnPosition(self):
         return self.pos
     
@@ -54,32 +60,38 @@ class Player():
         x, y = self.pos
         y += self.gravityVal
         self.pos = (x, y)
-        self.hitBox = pygame.Rect((x, y), (10, 10))
+        self.hitBox = pygame.Rect((x, y), (self.width, self.height))
     
     def adjustHorizontalPosition(self, keyPressed):
+        x2, y2 = self.screenSize
         x, y = self.pos
-        if keyPressed == "left":
-            x -= 1
-            self.pos = (x, y)
-            self.hitBox = pygame.Rect((x, y), (10, 10))
-        if keyPressed == "right":
-            x += 1
-            self.pos = (x, y)
-            self.hitBox = pygame.Rect((x, y), (10, 10))
+        if not keyPressed == "notMoving":
+            if keyPressed == "left":
+                x -= .5 * self.scale
+            elif keyPressed == "right":
+                x += .5 * self.scale
+            
+        if(x >= x2 - self.width):
+            x = x2 - self.width
+            print(x)
+        elif(x < 0):
+            x -= x-0
+        self.pos = (x, y)
+        self.hitBox = pygame.Rect((x, y), (10, 10))
     
 
     
     def draw(self, surface):
-        pygame.draw.rect(surface = self.surface, color=(255, 0, 0), rect=self.hitBox)
         surface.blit(self.surface, self.pos)
 
     def update(self, surface, keyPressed):
         if self.isFalling:
-            if self.gravityVal < 2:
-                self.gravityVal += .005
-        elif not self.isFalling:
-            self.gravityVal = -3
+            if self.gravityVal <= 2:
+                self.gravityVal += .005 * self.scale
+        if not self.isFalling:
+            self.gravityVal = -2 * self.scale
             self.setFalling(True)
+
         self.adjustYPosition()
         self.adjustHorizontalPosition(keyPressed)
         self.draw(surface)
@@ -99,19 +111,23 @@ def main():
     resolution = (800, 600)
     screen = pygame.display.set_mode(resolution, pygame.RESIZABLE)
     running = True
-    player = Player((400, 200), True, "")
+    player = Player((400, 200), True, "", resolution, 10, 10, 1)
     testObject = jumpingObject(resolution, (0, 500), 800, 5)
     fullscreen = False
     resolution2 = resolution
     keyPressed = ""
-
+    timeTillReset = 0
     while running:
+        x, y = player.getPos()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.VIDEORESIZE:
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                 resolution2 = (event.w, event.h)
+                x, y = resolution
+                player = Player((400, 200), True, "", resolution2, scale=event.w/x)
+                testObject = jumpingObject(resolution2, (0, 500), 800, 5)
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_F11:
                 window_size = pygame.display.get_desktop_sizes()[0]
                 resolution2 = window_size
@@ -127,13 +143,18 @@ def main():
                     screen = pygame.display.set_mode(resolution, pygame.RESIZABLE)
             if event.type == pygame.KEYDOWN and event.key == pygame.K_a:
                 keyPressed = "left"
+                timeTillReset = 0
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_d:
                 keyPressed = "right"
-            if player.returnHitBox().colliderect(testObject.returnHitBox()):
-                player.setFalling(False)
-        screen.fill((0, 0, 0))
+                timeTillReset = 0
+            if not(keyPressed == "notMoving") and timeTillReset > 1:
+                keyPressed == "notMoving"
+        screen.fill("black")
+        timeTillReset += 1
         player.update(screen, keyPressed)
         testObject.update(screen)
+        if(player.returnHitBox().colliderect(testObject.returnHitBox())):
+            player.setFalling(False)
 
         pygame.display.flip()
 
