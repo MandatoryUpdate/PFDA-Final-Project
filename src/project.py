@@ -131,7 +131,7 @@ def main():
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                 resolution2 = (event.w, event.h)
                 x, y = resolution
-                player = Player((400, 200), True, "", resolution2)
+                player = Player((400, 400), True, "", resolution2)
                 testObject = jumpingObject(resolution2, (0, 500), 800, 5)
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_F11:
                 window_size = pygame.display.get_desktop_sizes()[0]
@@ -161,13 +161,14 @@ def main():
         if(player.returnHitBox().colliderect(testObject.returnHitBox())):
             player.setFalling(False)
         realScore -= player.gravityVal
-        round(realScore)
         if displayScore < realScore:
-            displayScore = realScore
+            displayScore = round(realScore)
         print(displayScore)
+        fontType = pygame.freetype.SysFont(None, 12)
+        renderedFont, rect = fontType.render(str(displayScore), (255, 0, 0))
+        screen.blit(renderedFont, (200, 200))
         pygame.display.flip()
         clock.tick(720)
-
 
 
 
