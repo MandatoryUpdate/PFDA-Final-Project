@@ -11,11 +11,13 @@ class jumpingObject():
         self.surface = pygame.Surface(size=(width, height))
         self.hitBox = pygame.Rect(self.pos, (width, height))
         pygame.draw.rect(surface=self.surface, color=(255, 0, 0), rect=self.hitBox)
-        self.surface.fill("white")
 
-    
+
     def draw(self, surface):
         surface.blit(self.surface, self.pos)
+    
+    def giveYPosition(self):
+        return self.pos[1]
     
     def returnHitBox(self):
         return self.hitBox
@@ -23,18 +25,72 @@ class jumpingObject():
     def update(self, surface):
         self.draw(surface)
 
+class groupOfObjects():
+    def __init__(self, screenSize = (0,0)):
+        self.screenSize = screenSize
+        self.platforms = []
+        self.canMake = True
+
+    def update (self, checkRemove, surface):
+        if self.canMake and not self.platforms:
+            i = self.screenSize[1] - 50
+            while i > 62:
+                randomValue = random.randrange(0, int(self.screenSize[0]/2))
+                platform = jumpingObject(self.screenSize, (randomValue, i), 100, 10)
+                self.platforms.insert(0, platform)
+                
+                platform2 = jumpingObject(self.screenSize, (random.randrange(randomValue, self.screenSize[0]-randomValue), i - 100), 100, 10)
+                self.platforms.insert(0, platform2)
+                i = i - 150   
+            self.canMake = False
+        elif self.canMake:
+            i = self.platforms[0].pos[1] - 50
+            while i > 62:
+                randomValue = random.randrange(0, int(self.screenSize[0]/2))
+                platform = jumpingObject(self.screenSize, (randomValue, i), 100, 10)
+                print(platform.pos)
+                print(platform.hitBox)
+                self.platforms.insert(0, platform)
+                platform2 = jumpingObject(self.screenSize, (random.randrange(randomValue, self.screenSize[0]-randomValue), i - 100), 100, 10)
+                self.platforms.insert(0, platform2)
+                print (platform2.pos)
+                print (platform2.hitBox)
+                i = i - 150
+            self.canMake = False
+        
+
+        self.draw(surface)
+
+    def moveDown(self, distanceMovedDownY):
+        if self.platforms:
+            for platform in self.platforms:
+                x, y = platform.pos
+                y += 200
+                platform.pos = (x, y)
+                platform.hitBox.move(platform.pos)
+
+                if platform.pos[1] > self.screenSize[1]:
+                    del platform
+        self.canMake = True
+    
+    def draw(self, surface):
+        for platform in self.platforms:
+            platform.draw(surface)
+    
+
 class Player():
     def __init__(self, pos = (0,0), isFalling = True, keyPressed = "", screenSize = (0, 0), width = 10, height = 10):
         self.isFalling = isFalling
         self.keyPressed = keyPressed
         self.gravityVal = 1
         self.screenSize = screenSize
+        self.dead = False
         self.pos = pos
         self.width = width
         self.height = height
         self.scale = 1
         self.surface = pygame.Surface(size=(width, height))
-        self.hitBox = pygame.Rect((0, 0), (width, height))
+        self.hitBox = pygame.Rect((0, 0), (width, height), border_radius=5)
         pygame.draw.rect(surface = self.surface, color=(255, 0, 0), rect=self.hitBox)
 
 
@@ -61,22 +117,31 @@ class Player():
         x, y = self.pos
         y += self.gravityVal
         self.pos = (x, y)
-        self.hitBox = pygame.Rect((x, y), (self.width, self.height))
+        self.hitBox.move(self.pos)
+
+    def moveDown(self):
+        x, y = self.pos
+        y += 600
+        self.pos = (x, y)
+        self.hitBox.move(self.pos)
+
+
 
     
     def adjustHorizontalPosition(self, keyPressed):
         x2, y2 = self.screenSize
         x, y = self.pos
-        if not keyPressed == "notMoving":
-            if keyPressed == "left":
-                x -= .5
-            elif keyPressed == "right":
-                x += .5 
         
+        if keyPressed == "left":
+                x -= 10
+        elif keyPressed == "right":
+                x += 10
         if(x >= x2 - self.width):
             x = x2 - self.width
         elif(x < 0):
             x -= x-0
+        
+        
         self.pos = (x, y)
         self.hitBox = pygame.Rect((x, y), (10, 10))
     
@@ -87,16 +152,17 @@ class Player():
 
     def update(self, surface, keyPressed):
         if self.isFalling:
-            if self.gravityVal <= 2:
-                self.gravityVal += .005
+            if self.gravityVal <= 16:
+                self.gravityVal += 4
         if not self.isFalling:
-            self.gravityVal = -2
+            self.keyPressed = "notMoving"
+            self.gravityVal = -50
             self.setFalling(True)
         self.adjustYPosition()
         self.adjustHorizontalPosition(keyPressed)
         self.draw(surface)
         if self.pos[1] > self.screenSize[1]:
-            pass
+            del self
 
         
 
@@ -111,17 +177,18 @@ def main():
     dt = 0
     displayScore = 0
     realScore = 0
-    resolution = (800, 600)
+    resolution = (400, 800)
     screen = pygame.display.set_mode(resolution, pygame.RESIZABLE)
     running = True
-    player = Player((400, 200), True, "", resolution, 10, 10)
-    testObject = jumpingObject(resolution, (0, 500), 800, 5)
+    player = Player((200, 200), True, "", resolution, 10, 10)
+    platformGroup = groupOfObjects(resolution)
+
     fullscreen = False
     font = pygame.font.Font('freesansbold.ttf', 32)
+    fontType = pygame.freetype.SysFont(None, 50)
 
     resolution2 = resolution
     keyPressed = ""
-    timeTillReset = 0
     while running:
         x, y = player.getPos()
         for event in pygame.event.get():
@@ -131,44 +198,31 @@ def main():
                 screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
                 resolution2 = (event.w, event.h)
                 x, y = resolution
-                player = Player((400, 400), True, "", resolution2)
-                testObject = jumpingObject(resolution2, (0, 500), 800, 5)
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_F11:
-                window_size = pygame.display.get_desktop_sizes()[0]
-                resolution2 = window_size
-                fullscreen = not fullscreen
-                if fullscreen:
-                    pygame.display.quit()
-                    pygame.init()
-                    screen = pygame.display.set_mode(resolution2)
-                    pygame.display.toggle_fullscreen()
-                else:
-                    pygame.display.quit()
-                    pygame.display.init()
-                    screen = pygame.display.set_mode(resolution, pygame.RESIZABLE)
             if event.type == pygame.KEYDOWN and event.key == pygame.K_a:
                 keyPressed = "left"
-                timeTillReset = 0
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_d:
                 keyPressed = "right"
-                timeTillReset = 0
-        screen.fill("black")
-        timeTillReset += 1
-        if not player.isFalling:
-                keyPressed == "notMoving"
+        screen.fill("white")
+        for platform in platformGroup.platforms:   
+            if(player.hitBox.colliderect(platform.hitBox)):
+                if player.gravityVal > 0:
+                    player.setFalling(False)
+        
         player.update(screen, keyPressed)
-        testObject.update(screen)
-        if(player.returnHitBox().colliderect(testObject.returnHitBox())):
-            player.setFalling(False)
+        platformGroup.update(False, screen)
+                    
+        
+        if player.pos[1] <= 0:
+            player.moveDown()
+            platformGroup.moveDown(600)
+
         realScore -= player.gravityVal
         if displayScore < realScore:
             displayScore = round(realScore)
-        print(displayScore)
-        fontType = pygame.freetype.SysFont(None, 12)
         renderedFont, rect = fontType.render(str(displayScore), (255, 0, 0))
-        screen.blit(renderedFont, (200, 200))
+        screen.blit(renderedFont, (30, 30))
         pygame.display.flip()
-        clock.tick(720)
+        clock.tick(30)
 
 
 
