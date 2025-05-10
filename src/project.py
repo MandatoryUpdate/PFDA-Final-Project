@@ -65,12 +65,12 @@ class groupOfObjects():
         if self.platforms:
             for platform in self.platforms:
                 x, y = platform.pos
-                y += 200
+                y += 600
                 platform.pos = (x, y)
-                platform.hitBox.move(platform.pos)
-
+                platform.hitBox = pygame.Rect((0, 0), (10, 10))
                 if platform.pos[1] > self.screenSize[1]:
                     del platform
+
         self.canMake = True
     
     def draw(self, surface):
@@ -117,13 +117,13 @@ class Player():
         x, y = self.pos
         y += self.gravityVal
         self.pos = (x, y)
-        self.hitBox.move(self.pos)
+        self.hitBox = pygame.Rect((x, y), (10, 10))
 
     def moveDown(self):
         x, y = self.pos
         y += 600
         self.pos = (x, y)
-        self.hitBox.move(self.pos)
+        self.hitBox = pygame.Rect((x, y), (10, 10))
 
 
 
@@ -140,8 +140,6 @@ class Player():
             x = x2 - self.width
         elif(x < 0):
             x -= x-0
-        
-        
         self.pos = (x, y)
         self.hitBox = pygame.Rect((x, y), (10, 10))
     
@@ -203,6 +201,7 @@ def main():
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_d:
                 keyPressed = "right"
         screen.fill("white")
+        
         for platform in platformGroup.platforms:   
             if(player.hitBox.colliderect(platform.hitBox)):
                 if player.gravityVal > 0:
