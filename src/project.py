@@ -228,17 +228,56 @@ def Game(resolution, screen):
 def DEATH_SCREEN(resolution, screen):
     pygame.init()
     running = True
+    surface = pygame.Surface((65, 50))
+    menuBox = pygame.Rect((0, 0), (65, 50))
+    pygame.draw.rect(surface, color=(255, 255, 255), rect=menuBox)
+    font = pygame.font.Font('freesansbold.ttf', 32)
+    fontType = pygame.freetype.SysFont(None, 50)
+    renderedFont1, rect = fontType.render("Return to Menu", (255, 0, 0))
     clock = pygame.time.Clock()
     while running:
+        mouse_position = pygame.mouse.get_pos()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                print("This works")
+                running = False
+                return GAME_MENU
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_a:
+                running = False
+                return GAME
         screen.fill("black")
+        screen.blit(surface, (100, 200))
+
         clock.tick(30)
         pygame.display.flip()
 
 # 2 Menus -> Game_Menu, DEATH_SCREEN
+def Game_Menu(resolution, screen):
+    pygame.init()
+    running = True
+    surface = pygame.Surface((65, 50))
+    menuBox = pygame.Rect((0, 0), (65, 50))
+    pygame.draw.rect(surface, color=(255, 255, 255), rect=menuBox)
+    font = pygame.font.Font('freesansbold.ttf', 32)
+    fontType = pygame.freetype.SysFont(None, 50)
+    renderedFont1, rect = fontType.render("Return to Menu", (255, 0, 0))
+    clock = pygame.time.Clock()
+    while running:
+        mouse_position = pygame.mouse.get_pos()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                print("This works")
+                running = False
+                return GAME
+        screen.fill("red")
+        screen.blit(surface, (100, 200))
 
+        clock.tick(30)
+        pygame.display.flip()
 
 def main():
     resolution = (400, 800)
@@ -250,7 +289,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
         if scene == GAME_MENU:
-            pass
+            scene = Game_Menu(resolution, screen)
         elif scene == GAME:
             scene = Game(resolution, screen)
         elif scene == DEATH_SCREEN:
