@@ -2,6 +2,11 @@ import random
 import pygame
 from pygame import mixer
 
+GAME_MENU = 0
+GAME = 1
+DEATH_SCREEN = 2
+
+
 class jumpingObject():
     def __init__(self, screenSize = (0,0), pos = (0,0), width = 800, height = 5):
         self.screenSize = screenSize
@@ -168,23 +173,17 @@ class Player():
 
 
 
-def main():
+def Game(resolution, screen):
     pygame.init()
-    pygame.display.set_caption("Final Project")
     clock = pygame.time.Clock()
-    dt = 0
     displayScore = 0
     realScore = 0
-    resolution = (400, 800)
-    screen = pygame.display.set_mode(resolution, pygame.RESIZABLE)
     running = True
     player = Player((200, 200), True, "", resolution, 10, 10)
     platformGroup = groupOfObjects(resolution)
-
     fullscreen = False
     font = pygame.font.Font('freesansbold.ttf', 32)
     fontType = pygame.freetype.SysFont(None, 50)
-
     resolution2 = resolution
     keyPressed = ""
     while running:
@@ -192,29 +191,32 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.VIDEORESIZE:
-                screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
-                resolution2 = (event.w, event.h)
-                x, y = resolution
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_a:
-                keyPressed = "left"
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_d:
-                keyPressed = "right"
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_a:
+                    keyPressed = "left"
+                elif event.key == pygame.K_d:
+                    keyPressed = "right"
+                else:
+                    keyPressed = "none"
+
+            if player.dead:
+                running = False
+                return DEATH_SCREEN
         screen.fill("white")
-        
-        for platform in platformGroup.platforms:   
-            if(player.hitBox.colliderect(platform.hitBox)):
-                if player.gravityVal > 0:
-                    player.setFalling(False)
-        
-        player.update(screen, keyPressed)
-        platformGroup.update(False, screen)
-                    
-        
         if player.pos[1] <= 0:
             player.moveDown()
             platformGroup.moveDown(600)
-
+        for platform in platformGroup.platforms:   
+            if(player.hitBox.colliderect(platform.hitBox)):
+                if player.gravityVal >= 0:
+                    player.setFalling(False)
+       
+        player.update(screen, keyPressed)
+        platformGroup.update(False, screen)
+        
+        if player.pos[1] > resolution[1]:
+            player.dead = True
+       
         realScore -= player.gravityVal
         if displayScore < realScore:
             displayScore = round(realScore)
@@ -223,12 +225,37 @@ def main():
         pygame.display.flip()
         clock.tick(30)
 
+def DEATH_SCREEN(resolution, screen):
+    pygame.init()
+    running = True
+    clock = pygame.time.Clock()
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        screen.fill("black")
+        clock.tick(30)
+        pygame.display.flip()
+
+# 2 Menus -> Game_Menu, DEATH_SCREEN
 
 
-
-
-
-
+def main():
+    resolution = (400, 800)
+    screen = pygame.display.set_mode(resolution, pygame.RESIZABLE)
+    scene = GAME
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        if scene == GAME_MENU:
+            pass
+        elif scene == GAME:
+            scene = Game(resolution, screen)
+        elif scene == DEATH_SCREEN:
+            scene = DEATH_SCREEN(resolution, screen)
+            
 
 if __name__ == "__main__":
     main()
