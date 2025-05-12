@@ -53,13 +53,9 @@ class groupOfObjects():
             while i > 62:
                 randomValue = random.randrange(0, int(self.screenSize[0]/2))
                 platform = jumpingObject(self.screenSize, (randomValue, i), 100, 10)
-                print(platform.pos)
-                print(platform.hitBox)
                 self.platforms.insert(0, platform)
                 platform2 = jumpingObject(self.screenSize, (random.randrange(randomValue, self.screenSize[0]-randomValue), i - 100), 100, 10)
                 self.platforms.insert(0, platform2)
-                print (platform2.pos)
-                print (platform2.hitBox)
                 i = i - 150
             self.canMake = False
         
@@ -72,7 +68,7 @@ class groupOfObjects():
                 x, y = platform.pos
                 y += 600
                 platform.pos = (x, y)
-                platform.hitBox = pygame.Rect((0, 0), (10, 10))
+                platform.hitBox = pygame.Rect(platform.pos, (100, 10))
                 if platform.pos[1] > self.screenSize[1]:
                     del platform
 
@@ -95,7 +91,7 @@ class Player():
         self.height = height
         self.scale = 1
         self.surface = pygame.Surface(size=(width, height))
-        self.hitBox = pygame.Rect((0, 0), (width, height), border_radius=5)
+        self.hitBox = pygame.Rect(self.pos, (width, height), border_radius=5)
         pygame.draw.rect(surface = self.surface, color=(255, 0, 0), rect=self.hitBox)
 
 
@@ -129,6 +125,7 @@ class Player():
         y += 600
         self.pos = (x, y)
         self.hitBox = pygame.Rect((x, y), (10, 10))
+        self.gravityVal = 1
 
 
 
@@ -208,6 +205,8 @@ def Game(resolution, screen):
             platformGroup.moveDown(600)
         for platform in platformGroup.platforms:   
             if(player.hitBox.colliderect(platform.hitBox)):
+                print("This is working")
+                print(player.gravityVal)
                 if player.gravityVal >= 0:
                     player.setFalling(False)
        
@@ -217,7 +216,10 @@ def Game(resolution, screen):
         if player.pos[1] > resolution[1]:
             player.dead = True
        
-        realScore -= player.gravityVal
+        if player.gravityVal < 0:
+            realScore += 1
+        else:
+            realScore -= 1
         if displayScore < realScore:
             displayScore = round(realScore)
         renderedFont, rect = fontType.render(str(displayScore), (255, 0, 0))
@@ -243,7 +245,6 @@ def DEATH_SCREEN(resolution, screen):
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if menuBox.collidepoint(mouse_position):
-                    print("This works")
                     running = False
                     return GAME_MENU
                 if gameBox.collidepoint(mouse_position):
@@ -275,7 +276,6 @@ def Game_Menu(resolution, screen):
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                print("This works")
                 running = False
                 return GAME
         screen.fill("red")
