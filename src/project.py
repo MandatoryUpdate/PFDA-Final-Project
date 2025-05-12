@@ -125,7 +125,6 @@ class Player():
         y += 600
         self.pos = (x, y)
         self.hitBox = pygame.Rect((x, y), (10, 10))
-        self.gravityVal = 1
 
 
 
@@ -230,13 +229,16 @@ def Game(resolution, screen):
 def DEATH_SCREEN(resolution, screen):
     pygame.init()
     running = True
-    surface = pygame.Surface((600, 50))
+    surface = pygame.Surface((120, 50))
+    surface2 = pygame.Surface((120, 50))
     menuBox = pygame.Rect((50, 400), (120, 50))
     gameBox = pygame.Rect((200, 400), (120, 50))
     font = pygame.font.Font('freesansbold.ttf', 12)
     fontType = pygame.freetype.SysFont(None, 12)
     renderedFont1, rect = fontType.render("Return to Menu", (255, 0, 0))
     renderedFont2, rect = fontType.render("Play Again", (255, 0, 0))
+    fontType2 = pygame.freetype.SysFont(None, 48)
+    renderedFont3, rect = fontType2.render("You Died :(((((", (255, 0, 0))
     clock = pygame.time.Clock()
     while running:
         mouse_position = pygame.mouse.get_pos()
@@ -252,23 +254,30 @@ def DEATH_SCREEN(resolution, screen):
                     return GAME
                 
         screen.fill("black")
-        pygame.draw.rect(surface, color=(1, 255, 255), rect=gameBox)
-        pygame.draw.rect(surface, color=(1, 255, 255), rect=menuBox)
+        surface.fill("white")
+        surface2.fill("white")
+        pygame.draw.rect(surface, color=(1, 100, 255), rect=gameBox)
+        pygame.draw.rect(surface2, color=(1, 100, 255), rect=menuBox)
+
         screen.blit(surface, (50, 400))
+        screen.blit(surface2, (200, 400))
         screen.blit(renderedFont1, (65, 418))
         screen.blit(renderedFont2, (215, 418))
+        screen.blit(renderedFont3, (45, 110))
         pygame.display.flip()
 
 # 2 Menus -> Game_Menu, DEATH_SCREEN
 def Game_Menu(resolution, screen):
     pygame.init()
     running = True
-    surface = pygame.Surface((65, 50))
-    menuBox = pygame.Rect((100, 200), (65, 50))
-    pygame.draw.rect(surface, color=(255, 255, 255), rect=menuBox)
+    surface = pygame.Surface((130, 100))
+    gameBox = pygame.Rect((100, 200), (130, 100))
+    pygame.draw.rect(surface, color=(255, 255, 255), rect=gameBox)
     font = pygame.font.Font('freesansbold.ttf', 32)
-    fontType = pygame.freetype.SysFont(None, 12)
+    fontType = pygame.freetype.SysFont(None, 24)
+    fontType2 = pygame.freetype.SysFont(None, 48)
     renderedFont1, rect = fontType.render("Play Game", (255, 0, 0))
+    renderedFont2, rect = fontType2.render("Jumpy Jump", (255, 255, 255))
     clock = pygame.time.Clock()
     while running:
         mouse_position = pygame.mouse.get_pos()
@@ -279,16 +288,17 @@ def Game_Menu(resolution, screen):
                 running = False
                 return GAME
         screen.fill("red")
-        screen.blit(surface, (100, 200))
-        screen.blit(renderedFont1, (100, 220))
-
+        screen.blit(surface, (125, 370))
+        screen.blit(renderedFont1, (129, 410))
+        screen.blit(renderedFont2, (45, 110))   
+        # -20, -70
         clock.tick(30)
         pygame.display.flip()
 
 def main():
     resolution = (400, 800)
     screen = pygame.display.set_mode(resolution, pygame.RESIZABLE)
-    scene = GAME_MENU
+    scene = DEATH_SCREEN
     running = True
     while running:
         for event in pygame.event.get():
