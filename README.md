@@ -1,10 +1,10 @@
 # PROJECT TITLE
 Jumpy Jump
 ## Demo
-Demo Video: <URL>
+Demo Video: https://youtu.be/YU60c7QBBI4
 
 ## GitHub Repository
-GitHub Repo: <URL>
+GitHub Repo: https://github.com/MandatoryUpdate/PFDA-Final-Project.git
 
 ## Description
 This project was a simple exercise in implementing Python code to make a functioning game akin to Doodle Jump. There aren't many files inside the game, just the project.py, which contains all
@@ -20,3 +20,10 @@ Most likely the issue is with how the character is interacting with that border,
 Another important thing to add would have to be better graphics. The game only functions on simple shapes rather than actual images, which diminishes the idea that this is a game. I'd also like to 
 change the movement system so that a player is not infinintely moving in a direction after a movement key is pressed. I couldn't fix that issue in time, and it wasn't that big of a problem, so I left it
 as is.
+
+## Tutorials Used
+# For scene switching:
+https://stackoverflow.com/questions/63317696/a-good-way-to-switch-to-a-menu-using-pygame
+
+# For button mechanics and platform mechanics:
+https://www.youtube.com/watch?v=BHr9jxKithk
