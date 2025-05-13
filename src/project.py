@@ -1,6 +1,5 @@
 import random
 import pygame
-from pygame import mixer
 
 GAME_MENU = 0
 GAME = 1
