@@ -298,7 +298,7 @@ def Game_Menu(resolution, screen):
 def main():
     resolution = (400, 800)
     screen = pygame.display.set_mode(resolution, pygame.RESIZABLE)
-    scene = DEATH_SCREEN
+    scene = GAME_MENU
     running = True
     while running:
         for event in pygame.event.get():
